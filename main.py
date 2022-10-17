@@ -50,8 +50,6 @@ def get_weather(region):
     else:
         # 获取地区的location--id
         location_id = response["location"][0]["id"]
-        adm1 = response["location"][0]["adm1"]
-        adm2 = response["location"][0]["adm2"]
     weather_url = "https://devapi.qweather.com/v7/weather/now?location={}&key={}".format(location_id, key)
     response = get(weather_url, headers=headers).json()
     # 天气
@@ -60,15 +58,7 @@ def get_weather(region):
     temp = response["now"]["temp"] + u"\N{DEGREE SIGN}" + "C"
     # 风向
     wind_dir = response["now"]["windDir"]
-    #风速
-    windSpeed = response["now"]["windSpeed"]
-    #湿度
-    humidity = response["now"]["humidity"]
-    #风力
-    windScale = response["now"]["windScale"]
-    #气压
-    pressure = response["now"]["pressure"]
-    return weather, temp, wind_dir,windSpeed,humidity,windScale,pressure,adm1,adm2
+    return weather, temp, wind_dir
  
  
 def get_birthday(birthday, year, today):
@@ -125,34 +115,14 @@ def get_ciba():
     return note_ch, note_en
  
  
-# def send_message(to_user, access_token, region_name, weather, temp, wind_dir, note_ch, note_en):
-#     url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token={}".format(access_token)
-#     week_list = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"]
-#     year = localtime().tm_year
-#     month = localtime().tm_mon
-#     day = localtime().tm_mday
-#     today = datetime.date(datetime(year=year, month=month, day=day))
-#     week = week_list[today.isoweekday() % 7]
-#     #获取今日课程
-#     if week == "星期日":
-#         keChen = config["zhou7"]
-#     elif week == "星期一":
-#         keChen = config["zhou1"]
-#     elif week == "星期二":
-#         keChen = config["zhou2"]
-#     elif week == "星期三":
-#         keChen = config["zhou3"]
-#     elif week == "星期四":
-#         keChen = config["zhou4"]
-#     elif week == "星期五":
-#         keChen = config["zhou5"]
-#     elif week == "星期六":
-#         keChen = config["zhou6"]
-#     else:
-#         keChen = "课程错误"
-    # 获取农历今年对应的月和日
-    rtoday = ZhDate.from_datetime(datetime(year, month, day)).chinese()
-    
+def send_message(to_user, access_token, region_name, weather, temp, wind_dir, note_ch, note_en):
+    url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token={}".format(access_token)
+    week_list = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"]
+    year = localtime().tm_year
+    month = localtime().tm_mon
+    day = localtime().tm_mday
+    today = datetime.date(datetime(year=year, month=month, day=day))
+    week = week_list[today.isoweekday() % 7]
     # 获取在一起的日子的日期格式
     love_year = int(config["love_date"].split("-")[0])
     love_month = int(config["love_date"].split("-")[1])
@@ -176,7 +146,7 @@ def get_ciba():
                 "color": get_color()
             },
             "region": {
-                "value": adm1+"-"+adm2+"市-"+region_name+"区",
+                "value": region_name,
                 "color": get_color()
             },
             "weather": {
@@ -201,30 +171,6 @@ def get_ciba():
             },
             "note_ch": {
                 "value": note_ch,
-                "color": get_color()
-            },
-            "keChen": {
-                "value": keChen,
-                "color": get_color()
-            },
-            "windSpeed": {
-                "value": windSpeed+"m/s",
-                "color": get_color()
-            },
-            "humidity": {
-                "value": humidity+"%",
-                "color": get_color()
-            },
-            "windScale": {
-                "value": windScale+"级",
-                "color": get_color()
-            },
-            "pressure": {
-                "value": pressure+"hPa",
-                "color": get_color()
-            },
-            "rtoday": {
-                "value": rtoday,
                 "color": get_color()
             }
         }
@@ -275,7 +221,7 @@ if __name__ == "__main__":
     users = config["user"]
     # 传入地区获取天气信息
     region = config["region"]
-    weather, temp, wind_dir,windSpeed,humidity,windScale,pressure,adm1,adm2 = get_weather(region)
+    weather, temp, wind_dir = get_weather(region)
     note_ch = config["note_ch"]
     note_en = config["note_en"]
     if note_ch == "" and note_en == "":
